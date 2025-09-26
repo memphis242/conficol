@@ -46,7 +46,7 @@ void memset_scramble(void * const ptr, size_t nbytes)
    // Seed off of the value of the first byte...
    // TODO: Figure out a better seed value... NOTE: gotta be multi-platform,
    // and account for embedded environments - time() and/or clock() isn't guaranteed!
-   uint8_t first_byte = *(uint8_t *)ptr;
+   uint64_t first_byte = 0 | *(uint8_t *)ptr;
    uint64_t seed = first_byte
                    | (~first_byte << 8 )
                    | ( first_byte << 16)
@@ -59,7 +59,7 @@ void memset_scramble(void * const ptr, size_t nbytes)
    biski64_seed(&rng_state, seed);
 
    uint64_t * u64_ptr = (uint64_t *)ptr;
-   for ( size_t i = 0, prn = 0; i < (nbytes / 4); ++i, ++u64_ptr )
+   for ( size_t i = 0; i < (nbytes / 4); ++i, ++u64_ptr )
       *u64_ptr = biski64_next(&rng_state);
 
    uint8_t leftover_bytes = nbytes % 4;
