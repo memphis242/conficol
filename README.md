@@ -1,4 +1,4 @@
-# `ccol`: Generic Collections Library in C
+# `conficol`: Generic Collections Library in C
 TODO
 
 ## Benchmarks
@@ -17,7 +17,7 @@ No dependencies. :slightly_smiling_face:
 ### Notes on Link-Time Optimization
 One may ask,
 
-> "If I'm only using a subset of the functions provided in ccol, do I still get the entire library statically linked into my final executable?"
+> "If I'm only using a subset of the functions provided in conficol, do I still get the entire library statically linked into my final executable?"
 
 Although this may vary depending on your specific linker, typically, a linker is smart enough to optimize out which individual _object files_ within a library are not used. However, individual symbols within an object file are not _by default_ optimized out, even if unused and not linked to any specific reference within an application. Overall, this technically results in an inefficient application size.   
 

@@ -9,5 +9,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - First major implementation of `Vector`
 
-[alpha-0.1.0]: https://github.com/memphis242/ccol/tree/alpha-0.1.0
+[alpha-0.1.0]: https://github.com/memphis242/conficol/tree/alpha-0.1.0
 

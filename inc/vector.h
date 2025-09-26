@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "ccol_shared.h"
+#include "conficol_shared.h"
 #include "vector_cfg.h"
 // TODO: Exceptions
 

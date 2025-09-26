@@ -74,6 +74,7 @@ PATH_UNITY        = Unity/src/
 PATH_SRC          = src/
 PATH_INC          = inc/
 PATH_CFG          = cfg/
+PATH_DEP          = submodules/
 PATH_TEST_FILES   = test/
 PATH_BUILD        = build/
 REL_DIR           = rel/
@@ -101,20 +102,20 @@ UNITY_HDR_FILES = $(wildcard $(PATH_UNITY)*.h)
 UNITY_OBJ_FILES = $(patsubst %.c, $(PATH_OBJ_FILES)%.o, $(notdir $(UNITY_SRC_FILES)))
 UNITY_LIB = unity
 
-COLLECTION_LIB_NAME = ccol
+COLLECTION_LIB_NAME = conficol
 
-SHARED_SRC_FILES = $(PATH_SRC)ccol_shared.c
-SHARED_HDR_FILES = $(PATH_INC)ccol_shared.h
+SHARED_SRC_FILES = $(PATH_SRC)conficol_shared.c
+SHARED_HDR_FILES = $(PATH_INC)conficol_shared.h
 SRC_FILES += $(SHARED_SRC_FILES)
 HDR_FILES += $(SHARED_HDR_FILES)
 ifeq ($(DS), ALL)
   SRC_FILES += $(wildcard $(PATH_SRC)*.c)
-  HDR_FILES += $(wildcard $(PATH_INC)*.h) $(wildcard $(PATH_CFG)$(DS)_cfg.h)
+  HDR_FILES += $(wildcard $(PATH_INC)*.h) $(wildcard $(PATH_CFG)$(DS)_cfg.h) $(PATH_DEP)
   SRC_TEST_FILES = $(wildcard $(PATH_TEST_FILES)*.c)
   LIB_FILE = $(PATH_BUILD)lib$(COLLECTION_LIB_NAME).$(STATIC_LIB_EXTENSION)
 else
   SRC_FILES += $(PATH_SRC)$(DS).c
-  HDR_FILES += $(PATH_INC)$(DS).h $(wildcard $(PATH_CFG)$(DS)_cfg.h)
+  HDR_FILES += $(PATH_INC)$(DS).h $(wildcard $(PATH_CFG)$(DS)_cfg.h) $(PATH_DEP)
   SRC_TEST_FILES = $(PATH_TEST_FILES)test_$(DS).c
   LIB_FILE = $(PATH_BUILD)lib$(DS).$(STATIC_LIB_EXTENSION)
 endif
@@ -183,7 +184,7 @@ COMPILER_OPTIMIZATION_LEVEL_DEBUG = -Og -g3
 COMPILER_OPTIMIZATION_LEVEL_SPEED = -O3 $(LIB_OPTIMIZATION_FLAGS)
 COMPILER_OPTIMIZATION_LEVEL_SPACE = -Os $(LIB_OPTIMIZATION_FLAGS)
 COMPILER_STANDARD = -std=c23
-INCLUDE_PATHS = -I. -I$(PATH_INC) -I$(PATH_UNITY) -I$(PATH_CFG)
+INCLUDE_PATHS = -I. -I$(PATH_INC) -I$(PATH_UNITY) -I$(PATH_CFG) -I$(PATH_DEP)
 COMMON_DEFINES =
 DIAGNOSTIC_FLAGS = -fdiagnostics-color
 COMPILER_STATIC_ANALYZER = -fanalyzer
