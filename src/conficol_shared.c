@@ -14,7 +14,7 @@
 
 #include "conficol_shared.h"
 
-#include "biski64/c/biski64.inl"
+#include "biski64/c/biski64.c"
 
 /* Public Function Definitions */
 
