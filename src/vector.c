@@ -64,17 +64,6 @@ struct Vector
    struct Allocator mem_mgr;
 };
 
-struct VIterator
-{
-   void * data_element; // Updated via VIteratorNudge()
-   struct Vector * vec;
-   ptrdiff_t init_idx; // This makes this iterator "resettable" - i.e., iter.curr_idx = iter.init_idx
-   ptrdiff_t curr_idx;
-   ptrdiff_t end_idx;
-   bool limit_hit; // This helps clarify when the iterator has gone through the last element
-   enum IterDirection dir; // Library supports wrapping around to reach end_idx
-};
-
 enum ShiftDir
 {
    ShiftDir_Left,
@@ -91,12 +80,6 @@ static bool            vec_isalloc(const struct Vector *);
 static bool vec_expand(struct Vector *);
 static bool vec_expandby(struct Vector *, size_t);
 static void shiftn( struct Vector *, size_t, enum ShiftDir, size_t);
-
-ptrdiff_t viter_span(struct VIterator * it);
-
-static struct VIterator * viter_pool_dispatch(void);
-static void               viter_pool_reclaim(const struct VIterator * ptr);
-static bool               viter_isalloc(const struct VIterator * ptr);
 
 /* Public API Implementations */
 
@@ -204,9 +187,11 @@ void VectorFree( struct Vector * self )
    {
       if ( (self->mem_mgr.reclaim != NULL) && (self->arr != NULL) )
       {
-         memset_scramble(self->arr, self->capacity * self->element_size);
+         // TODO: memset_scramble(self->arr, self->capacity * self->element_size);
+         memset(self->arr, 0, self->capacity * self->element_size);
          self->mem_mgr.reclaim(self->arr, self->capacity * self->element_size, self->mem_mgr.arena );
       }
+      memset(self, 0, sizeof(struct Vector));
       vec_pool_reclaim(self);
    }
 }
@@ -1073,256 +1058,12 @@ bool VectorRangeClear( struct Vector * self,
 }
 
 /******************************************************************************/
-/****************************** Vector Iterator *******************************/
-
-struct VIterator * VIteratorNew( const struct Vector * vector,
-                                 ptrdiff_t idx_start,
-                                 ptrdiff_t idx_end,
-                                 enum IterDirection direction )
-{
-   if ( vector == NULL || !vec_isalloc(vector) ||
-        idx_start <  0 || idx_start >= (ptrdiff_t)vector->len ||
-        idx_end   < -1 || idx_end   >  (ptrdiff_t)vector->len ||
-        ((direction == IterDir_Normal || direction == IterDir_Reverse) && idx_start == idx_end) ||
-        direction >= NumOfIterDirs ||
-        ( direction == IterDir_Right && idx_start > idx_end ) ||
-        ( direction == IterDir_Left  && idx_start < idx_end ) )
-   {
-      return NULL;
-   }
-
-   struct VIterator * new_iterator = viter_pool_dispatch();
-
-   if ( new_iterator == NULL )
-      return NULL;
-
-   new_iterator->vec = (struct Vector *)vector; // Casting away const'ness even though I'm not modifying the object here...
-   new_iterator->data_element = PTR_TO_IDX(vector, (size_t)idx_start);
-   new_iterator->init_idx = idx_start;
-   new_iterator->curr_idx = idx_start;
-   new_iterator->end_idx = idx_end;
-   new_iterator->limit_hit = false;
-   new_iterator->dir = direction;
-
-   return new_iterator;
-}
-
-/******************************************************************************/
-
-void VIteratorFree( struct VIterator * it )
-{
-   viter_pool_reclaim(it);
-}
-
-/******************************************************************************/
-
-void * VIteratorData( const struct VIterator * it )
-{
-   if ( it == NULL || !viter_isalloc(it) ) return NULL;
-   return it->data_element;
-}
-
-/******************************************************************************/
-
-ptrdiff_t VIteratorInitIdx( const struct VIterator * it )
-{
-   if ( it == NULL || !viter_isalloc(it) ) return PTRDIFF_MAX;
-   return it->init_idx;
-}
-
-/******************************************************************************/
-
-ptrdiff_t VIteratorCurrIdx( const struct VIterator * it )
-{
-   if ( it == NULL || !viter_isalloc(it) ) return PTRDIFF_MAX;
-   return it->curr_idx;
-}
-
-/******************************************************************************/
-
-ptrdiff_t VIteratorEndIdx( const struct VIterator * it )
-{
-   if ( it == NULL || !viter_isalloc(it) ) return PTRDIFF_MAX;
-   return it->end_idx;
-}
-
-/******************************************************************************/
-
-bool VIteratorLimitHit( const struct VIterator * it )
-{
-   if ( it == NULL || !viter_isalloc(it) ) return false;
-   return it->limit_hit;
-}
-
-/******************************************************************************/
-
-void VIteratorReset( struct VIterator * it )
-{
-   if ( it == NULL || !viter_isalloc(it) ) return;
-   it->curr_idx = it->init_idx;
-}
-
-/******************************************************************************/
-
-bool VIteratorNudge( struct VIterator * it )
-{
-   if ( NULL == it  || !viter_isalloc(it) ||
-        NULL == it->vec || NULL == it->vec->arr ||
-        it->curr_idx >= (ptrdiff_t)it->vec->len || it->end_idx > (ptrdiff_t)it->vec->len ||
-        viter_span(it) > (ptrdiff_t)it->vec->len || viter_span(it) <= 0 ||
-        it->curr_idx == it->end_idx || it->dir >= NumOfIterDirs ||
-        it->limit_hit == true )
-   {
-      return false;
-   }
-
-   switch ( it->dir)
-   {
-      case IterDir_Right:
-         if ( it->curr_idx >= (it->end_idx - 1) )
-         {
-            it->limit_hit = true;
-            return false;
-         }
-         it->curr_idx++;
-         break;
-
-      case IterDir_Left:
-         if ( it->curr_idx <= (it->end_idx + 1) )
-         {
-            it->limit_hit = true;
-            return false;
-         }
-         it->curr_idx--;
-         break;
-
-      case IterDir_RightWrap:
-         // FIXME: What if start and end idx are the same, but user wants that?
-         if ( it->curr_idx >= (it->end_idx - 1) ||
-              ( (it->curr_idx == ((ptrdiff_t)it->vec->len - 1)) && it->end_idx == 0 ) )
-         {
-            it->limit_hit = true;
-            return false;
-         }
-         // branchless way to wrap while avoiding modulus when incrementing by 1
-         it->curr_idx = it->curr_idx + 1 - 
-            ( (it->curr_idx + 1 == (ptrdiff_t)it->vec->len) * (ptrdiff_t)it->vec->len );
-         break;
-
-      case IterDir_LeftWrap:
-         // FIXME: What if start and end idx are the same, but user wants that?
-         if ( it->curr_idx <= (it->end_idx + 1) ||
-              ( it->curr_idx == 0 && (it->end_idx == (ptrdiff_t)it->vec->len || it->end_idx == ((ptrdiff_t)it->vec->len - 1)) ) )
-         {
-            it->limit_hit = true;
-            return false;
-         }
-         // branchless way to wrap while avoiding modulus when decrementing by 1
-         it->curr_idx = it->curr_idx - 1 + 
-            ( (it->curr_idx - 1 < 0) * (ptrdiff_t)it->vec->len );
-         break;
-
-      case IterDir_RightBounce:
-         if ( it->curr_idx >= (it->end_idx - 1) ||
-              ( (it->curr_idx == ((ptrdiff_t)it->vec->len - 1)) && it->end_idx == 0 ) )
-         {
-            it->limit_hit = true;
-            return false;
-         }
-         // TODO: Bounce needs extra bounce flag
-         break;
-
-      case IterDir_LeftBounce:
-         if ( it->curr_idx <= (it->end_idx + 1) )
-         {
-            it->limit_hit = true;
-            return false;
-         }
-         // TODO: Bounce needs extra bounce flag
-         break;
-
-      case NumOfIterDirs:
-         // fallthrough
-      default:
-         // Should never get here, because the function checks for limits on
-         // it->dir, but -Wswitch-enum doesn't know that, and I don't want to
-         // clutter the code here /w compiler-specific pragma warning suppressions..
-         return false;
-         break;
-   }
-
-   it->data_element = (void *)PTR_TO_IDX(it->vec, (size_t)it->curr_idx);
-
-   assert(it->curr_idx < (ptrdiff_t)it->vec->len);
-   assert(it->data_element != NULL);
-
-   return true;
-}
-
-/******************************************************************************/
-
-ptrdiff_t VIteratorPeek( struct VIterator * it )
-{
-   if ( NULL == it || viter_isalloc(it) ||
-        NULL == it->vec || NULL == it->vec->arr ||
-        it->dir >= NumOfIterDirs )
-   {
-      return PTRDIFF_MAX;
-   }
-
-   ptrdiff_t next_idx = it->end_idx;
-   switch ( it->dir)
-   {
-      case IterDir_Right:
-         next_idx = it->curr_idx + 1;
-         break;
-
-      case IterDir_Left:
-         next_idx = it->curr_idx - 1;
-         break;
-
-      case IterDir_RightWrap:
-         // branchless way to wrap while avoiding modulus when incrementing by 1
-         next_idx = it->curr_idx + 1 - 
-            ( (it->curr_idx + 1 == (ptrdiff_t)it->vec->len) * (ptrdiff_t)it->vec->len );
-         break;
-
-      case IterDir_LeftWrap:
-         next_idx = it->curr_idx - 1 + 
-            ( (it->curr_idx - 1 < 0) * (ptrdiff_t)it->vec->len );
-         break;
-
-      case IterDir_RightBounce:
-         // TODO
-         break;
-
-      case IterDir_LeftBounce:
-         // TODO
-         break;
-
-      case NumOfIterDirs:
-         // fallthrough
-      default:
-         // Should never get here, because the function checks for limits on
-         // it->dir, but -Wswitch-enum doesn't know that, and I don't want to
-         // clutter the code here /w compiler-specific pragma warning suppressions..
-         return PTRDIFF_MAX;
-         break;
-   }
-
-   assert(next_idx <= (ptrdiff_t)it->vec->len);
-   assert(next_idx >= -1);
-
-   return next_idx;
-}
-
-/******************************************************************************/
 
 /* Private Function Implementations */
 
 /**
  * @brief Expands the capacity of the vector to accommodate additional elements.
- * 
+ *
  * @param self Vector handle.
  * @return true if the expansion was successful, false otherwise.
  */
@@ -1396,7 +1137,7 @@ static bool vec_expandby( struct Vector * self, size_t add_cap )
    assert( (self->capacity == 0 && self->arr == NULL) ||
            (self->capacity >  0 && self->arr != NULL) );
    assert(self->len <= self->capacity);
-   assert(self->len <= self->max_capacity); 
+   assert(self->len <= self->max_capacity);
    assert(self->mem_mgr.realloc != NULL);
 
    // If there's no space in the vector, we can't expand
@@ -1481,44 +1222,6 @@ static void shiftn( struct Vector * self, size_t start_idx,
    memmove( new_spot, old_spot, (self->len - start_idx) * self->element_size );
 }
 
-/**
- * Calculates the span (number of elements) between the initial and end indices
- * of a vector iterator, taking into account the direction of iteration and
- * possible wrap-around in circular iteration.
- *
- * Preconditions:
- * - `it` must not be NULL.
- * - `it->vec` must not be NULL.
- * - `it->dir` must be a valid direction (less than NumOfIterDirs).
- *
- * @param it Pointer to a VIterator structure representing the iterator.
- * @return The span
- */
-ptrdiff_t viter_span(struct VIterator * it)
-{
-   assert(it != NULL);
-   assert(it->vec != NULL);
-   assert(it->dir < NumOfIterDirs);
-   // FIXME: Think through what happens if indices are greater than vec len...
-
-   ptrdiff_t span = 0;
-   if ( it->dir == IterDir_Right )
-   {
-      span = ( it->init_idx <= it->end_idx ) ?
-         it->end_idx - it->init_idx :
-         it->end_idx + ((ptrdiff_t)it->vec->len - it->init_idx);
-   }
-   else
-   {
-      span = ( it->init_idx >= it->end_idx ) ?
-         it->init_idx - it->end_idx :
-         it->init_idx + ((ptrdiff_t)it->vec->len - it->end_idx);
-   }
-
-   return span;
-}
-
-/******************************************************************************/
 
 /********************** Fixed-Size Object Arena Material **********************/
 
@@ -1628,122 +1331,6 @@ static bool vec_isalloc(const struct Vector * ptr)
       if ( ptr == &VecPool.pool[mid].vec )
          return VecPool.pool[mid].is_allocated;
       else if ( ptr < &VecPool.pool[mid].vec )
-         right = mid - 1;
-      else
-         left = mid + 1;
-   }
-
-   return false;
-}
-
-/*** VIterator Arena ***/
-
-struct VIteratorPoolItem
-{
-   struct VIterator viter;
-   bool is_allocated;
-};
-
-struct VIteratorPool
-{
-   struct VIteratorPoolItem pool[VITERATOR_STRUCT_POOL_SIZE];
-   size_t next_idx;
-};
-
-static struct VIteratorPool VIterPool;
-
-/**
- * @brief Allocates a new VIterator structure from a static arena.
- * @return Pointer to the allocated VIterator struct if successful, NULL otherwise.
- */
-static struct VIterator * viter_pool_dispatch(void)
-{
-   assert( VIterPool.next_idx < VITERATOR_STRUCT_POOL_SIZE );
-   assert( VIterPool.pool != NULL );
-#ifndef NDEBUG
-   // If next idx is allocated, by design, that must mean we are out of vitertors.
-   if ( VIterPool.pool[VIterPool.next_idx].is_allocated == true )
-   {
-      for ( size_t i = 0; i < VITERATOR_STRUCT_POOL_SIZE; i++ )
-      {
-         assert( VIterPool.pool[i].is_allocated == true );
-      }
-   }
-#endif
-
-   if ( VIterPool.pool[VIterPool.next_idx].is_allocated )
-   {
-      return NULL;
-   }
-
-   struct VIterator * new_viter = &VIterPool.pool[VIterPool.next_idx].viter;
-   VIterPool.pool[VIterPool.next_idx].is_allocated = true;
-
-   // 🗒️: Potential to place this in a separate asynchronous thread?
-   // Find the next available spot
-   size_t j = VIterPool.next_idx;
-   for ( size_t i = 1; i < VITERATOR_STRUCT_POOL_SIZE; i++, j++ )
-   {
-      if ( j >= VITERATOR_STRUCT_POOL_SIZE ) j = 0; // Wrap-around
-
-      if ( !VIterPool.pool[j].is_allocated )
-      {
-         VIterPool.next_idx = j;
-         break;
-      }
-   }
-
-   return new_viter;
-}
-
-static void viter_pool_reclaim(const struct VIterator * ptr)
-{
-   if ( NULL == ptr )
-   {
-      return;
-   }
-
-   // Find the vitertor address that matches this pointer
-   bool found = false;
-   for ( size_t i = 0; i < VITERATOR_STRUCT_POOL_SIZE; i++ )
-   {
-      if ( ptr == &VIterPool.pool[i].viter )
-      {
-         found = true;
-         if ( !VIterPool.pool[i].is_allocated )
-         {
-            // TODO: Raise exception for attempting to free an unallocated viter
-         }
-         VIterPool.pool[i].is_allocated = false;
-         break;
-      }
-   }
-
-   if ( !found )
-   {
-      // TODO: Raise an exception for attempting to free a random address
-   }
-}
-
-static bool viter_isalloc(const struct VIterator * ptr)
-{
-   if ( ptr == NULL ||
-        ptr < &VIterPool.pool[0].viter ||
-        ptr > &VIterPool.pool[VITERATOR_STRUCT_POOL_SIZE - 1].viter )
-   {
-      return false;
-   }
-
-   // Assumes the objects in VIterPool are arranged in increasing order of memory
-   size_t left = 0, right = VITERATOR_STRUCT_POOL_SIZE - 1;
-   size_t mid;
-   while ( left <= right )
-   {
-      mid = left + (right - left) / 2;
-
-      if ( ptr == &VIterPool.pool[mid].viter )
-         return VIterPool.pool[mid].is_allocated;
-      else if ( ptr < &VIterPool.pool[mid].viter )
          right = mid - 1;
       else
          left = mid + 1;
