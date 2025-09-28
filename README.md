@@ -1,17 +1,20 @@
 # `conficol`: A generic collections library in C that prioritizes **data-security** over performance and convenience
-There are a lot of collections libraries out there - probably everybody and their grandmother who have done C for long enough will have at some point implemented their own part of a collections library. What distinguishes this collections library is its priority - "data-security" over performance (speed/memory) and convenience (an easy-to-use intuitive API). The name `conficol` comes from `confidential` and `collection` slammed together, hinting at this design prioritization.   
+There are a lot of collections libraries out there - probably everybody and their grandmother who have done C for long enough will have implemented their own part of a collections library. What distinguishes this collections library is its priority - "data-security" over performance (speed/memory) and convenience (easy-to-use intuitive API). The name `conficol` comes from `confidential` and `collection` slammed together, hinting at this design prioritization.   
 
-Some of the principles strived for to achieve "data-security" include:
+### Core Principles & Ideas:
 
-1. Encapsulate the data structure behind an API that never allows a user to explicitly grab a reference to mutate the underlying data structure
+1. Encapsulate data structures behind an API that never allows a user to explicitly grab a reference to mutate the underlying data structure
    - No iterators, since iterators provide direct access to data within the data structure for the user
       - _However, the API supports a user providing a function that is performed on each element of a specified range within the data structure, much like a for-each loop would but with less convenient syntax (if only C had lambdas...)_
    - No get functions that return a direct reference to an element of the data structure
+
 2. Usage of opaque data types - the user only ever has a pointer handle to a data structure that they pass to the API, but never the ability to directly modify the data structure's members
-3. Maintain privacy of the data as much as possible by imagining that someone has the ability to the underlying data of each data structure
+
+3. Maintain privacy of the data as much as possible
    - Optionally encrypt/decrypt (using the built-in functions or providing one at constructor time) data with each access as applicable
-   - Freeing the data structures comes with a scrambling of their underlying memory
-4. Memory bugs that can be prevented/mitigated from within the bounds of this library must be prevented/mitigated (e.g., out-of-bounds accesses, use-after-frees)
+   - Freeing data structures comes with a scrambling of their underlying memory
+
+4. Prevent memory bugs whenever possible from within the bounds of this library (e.g., out-of-bounds accesses, use-after-frees)
    - Ideally, all memory bugs are prevented altogether, but not all such bugs are preventable from within the bounds of this library (e.g., memory leaks)
 
 ## Benchmarks
