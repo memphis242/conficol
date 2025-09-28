@@ -87,7 +87,7 @@ static void shiftn( struct Vector *, size_t, enum ShiftDir, size_t);
 struct Vector * VectorNew( size_t element_size,
                            size_t init_capacity,
                            size_t max_capacity,
-                           void * init_data,
+                           const void * init_data,
                            size_t init_dlen,
                            const struct Allocator * mem_mgr )
 {
