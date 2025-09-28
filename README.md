@@ -8,8 +8,8 @@ There are a lot of collections libraries out there - probably everybody and thei
       - _However, the API supports a user providing a function that is performed on each element of a specified range within the data structure, much like a for-each loop would but with less convenient syntax (if only C had lambdas...)_
    - No get functions that return a direct reference to an element of the data structure
 
-2. Provide user with opaque data types
-   - The user only ever has a pointer handle to a data structure that they pass to the API, but never the ability to directly modify the data structure's members.
+2. Provide user with [opaque data types](https://en.wikipedia.org/wiki/Opaque_data_type) only.
+   - The user only ever has a pointer handle to a data structure that they pass to the API, but never the ability to directly modify the data structure's members, nor direct knowledge of the underlying struct structure (unless they look up the corresponding src file in this repo).
 
 3. Maintain privacy of the data as much as possible.
    - Optionally encrypt/decrypt (using the built-in functions or providing one at constructor time) data with each access as applicable
