@@ -3,19 +3,22 @@ There are a lot of collections libraries out there - probably everybody and thei
 
 ### Core Principles & Ideas:
 
-1. Encapsulate data structures behind an API that never allows a user to explicitly grab a reference to mutate the underlying data structure
+1. Encapsulate data structures behind an API that never allows a user to explicitly grab a reference to mutate the underlying data structure.
    - No iterators, since iterators provide direct access to data within the data structure for the user
       - _However, the API supports a user providing a function that is performed on each element of a specified range within the data structure, much like a for-each loop would but with less convenient syntax (if only C had lambdas...)_
    - No get functions that return a direct reference to an element of the data structure
 
-2. Usage of opaque data types - the user only ever has a pointer handle to a data structure that they pass to the API, but never the ability to directly modify the data structure's members
+2. Provide user with opaque data types
+   - The user only ever has a pointer handle to a data structure that they pass to the API, but never the ability to directly modify the data structure's members.
 
-3. Maintain privacy of the data as much as possible
+3. Maintain privacy of the data as much as possible.
    - Optionally encrypt/decrypt (using the built-in functions or providing one at constructor time) data with each access as applicable
    - Freeing data structures comes with a scrambling of their underlying memory
 
-4. Prevent memory bugs whenever possible from within the bounds of this library (e.g., out-of-bounds accesses, use-after-frees)
+4. Prevent memory bugs whenever possible from within the bounds of this library (e.g., out-of-bounds accesses, use-after-frees).
    - Ideally, all memory bugs are prevented altogether, but not all such bugs are preventable from within the bounds of this library (e.g., memory leaks)
+
+5. Provide a rich but orthogonal API.
 
 ## Benchmarks
 This library is not designed to be the fastest collections library out there, since we trade speed/memory performance for data-security. With that said, after addressing the main goal, efficiency in speed is prioritized, then memory. You may also still want to know how the various data structure implementations compare to some of the popular options out there (e.g., glib, C++'s STL, etc.). See the [`benchmarks/`](./benchmarks/) directory for some of the detailed benchmarks of each data structure's API. There are also benchmarks of different approaches that could be taken in the implementation of functionality of each data structure whenever there was uncertainty.
