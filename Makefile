@@ -4,20 +4,32 @@
 
 .PHONY: release release-vec libvector
 .PHONY: debug debug-vec
-.PHONY: test-vec test-all
+.PHONY: test-com test-vec test-all
+.PHONY: test-com-verbose test-vec-verbose test-all-verbose
 .PHONY: coverage
 
 test-vec:
 	@echo "Hold on. Build in progress... (output supressed until test results)"
 	@$(MAKE) _test BUILD_TYPE=TEST DS=vector > /dev/null
-	cat $(RESULTS) | python $(COLORIZE_UNITY_SCRIPT)
+	cat $(PATH_RESULTS)test_vector.txt | python $(COLORIZE_UNITY_SCRIPT)
 	@$(MAKE) coverage BUILD_TYPE=TEST DS=vector > /dev/null
+
+test-com:
+	@echo "Hold on. Build in progress... (output supressed until test results)"
+	@$(MAKE) _test BUILD_TYPE=TEST DS=conficol_shared > /dev/null
+	cat $(PATH_RESULTS)test_conficol_shared.txt | python $(COLORIZE_UNITY_SCRIPT)
+	@$(MAKE) coverage BUILD_TYPE=TEST DS=conficol_shared > /dev/null
 
 test-all:
 	@echo "Hold on. Build in progress... (output supressed until test results)"
 	@$(MAKE) --always-make test-vec > /dev/null
-	cat $(RESULTS) | python $(COLORIZE_UNITY_SCRIPT)
+	cat $(PATH_RESULTS)test_vector.txt | python $(COLORIZE_UNITY_SCRIPT)
+	cat $(PATH_RESULTS)test_conficol_shared.txt | python $(COLORIZE_UNITY_SCRIPT)
 	@$(MAKE) coverage BUILD_TYPE=TEST > /dev/null
+
+test-com-verbose:
+	@$(MAKE) _test BUILD_TYPE=TEST DS=conficol_shared
+	@$(MAKE) coverage BUILD_TYPE=TEST DS=conficol_shared
 
 test-vec-verbose:
 	@$(MAKE) _test BUILD_TYPE=TEST DS=vector

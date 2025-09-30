@@ -213,7 +213,7 @@ void test_memset_scramble_EntropyDistribution(void)
 
    // Expect roughly balanced distribution (within 20% of perfect balance)
    const size_t total_bits = buf_size * 8;
-   float ratio = (double)bit_counts.n_ones / total_bits;
+   float ratio = (float)bit_counts.n_ones / (float)total_bits;
    TEST_ASSERT_GREATER_THAN_FLOAT(0.3f, ratio);  // At least 30% ones
    TEST_ASSERT_LESS_THAN_FLOAT   (0.7f, ratio);  // At most  70% ones
 }

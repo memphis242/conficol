@@ -40,8 +40,8 @@ void default_reclaim(void * old_ptr, size_t old_sz, void * arena)
 
 void memset_scramble(void * const ptr, size_t nbytes)
 {
-   assert(ptr != NULL);
-   assert(nbytes > 0);
+   assert(ptr != NULL); // GCOVR_EXCL_LINE
+   assert(nbytes > 0); // GCOVR_EXCL_LINE
 
    // Seed off of the value of the first byte...
    // TODO: Figure out a better seed value... NOTE: gotta be multi-platform,
