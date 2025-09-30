@@ -291,93 +291,93 @@ int main(void)
 {
    UNITY_BEGIN();
 
-   //RUN_TEST(test_VectorNew_Invalid_ZeroElementSz);
-   //RUN_TEST(test_VectorNew_Invalid_MaxCapLessThanInitCap);
-   //RUN_TEST(test_VectorNew_Invalid_ZeroMaxCap);
-   //RUN_TEST(test_VectorNew_Invalid_InitialLen);
-   //RUN_TEST(test_VectorNew_ValidInputCombo_3DPoints);
-   //RUN_TEST(test_VectorNew_CapacityLimit);
-   //RUN_TEST(test_VectorNew_ElementSzLimit);
-   //RUN_TEST(test_VectorNew_InitData);
-   //RUN_TEST(test_VectorNew_InitialLenLessThanInitialCap);
-   //RUN_TEST(test_VectorNew_InitialLenSameAsInitialCap);
+   RUN_TEST(test_VectorNew_Invalid_ZeroElementSz);
+   RUN_TEST(test_VectorNew_Invalid_MaxCapLessThanInitCap);
+   RUN_TEST(test_VectorNew_Invalid_ZeroMaxCap);
+   RUN_TEST(test_VectorNew_Invalid_InitialLen);
+   RUN_TEST(test_VectorNew_ValidInputCombo_3DPoints);
+   RUN_TEST(test_VectorNew_CapacityLimit);
+   RUN_TEST(test_VectorNew_ElementSzLimit);
+   RUN_TEST(test_VectorNew_InitData);
+   RUN_TEST(test_VectorNew_InitialLenLessThanInitialCap);
+   RUN_TEST(test_VectorNew_InitialLenSameAsInitialCap);
 
-   //RUN_TEST(test_VectorOpsOnNullVectors);
+   RUN_TEST(test_VectorOpsOnNullVectors);
 
-   //RUN_TEST(test_VectorFree);
-   //RUN_TEST(test_VectorLength);
-   //RUN_TEST(test_VectorCapacity);
-   //RUN_TEST(test_VectorMaxCapacity);
-   //RUN_TEST(test_VectorElementSize);
-   //RUN_TEST(test_VectorIsEmpty);
-   //RUN_TEST(test_VectorIsFull);
+   RUN_TEST(test_VectorFree);
+   RUN_TEST(test_VectorLength);
+   RUN_TEST(test_VectorCapacity);
+   RUN_TEST(test_VectorMaxCapacity);
+   RUN_TEST(test_VectorElementSize);
+   RUN_TEST(test_VectorIsEmpty);
+   RUN_TEST(test_VectorIsFull);
 
-   //RUN_TEST(test_VectorPush_SimplePush);
-   //RUN_TEST(test_VectorPush_UntilCapacity);
-   //RUN_TEST(test_VectorPush_PastInitialCapacity);
-   //RUN_TEST(test_VectorPush_PastMaxCapacity);
-   //RUN_TEST(test_VectorPush_IntoVecWithZeroMaxCap);
-   //RUN_TEST(test_VectorPush_InitialCapOfZero);
-   //RUN_TEST(test_VectorPush_AfterResetting);
-   //RUN_TEST(test_VectorPush_AfterHardResetting);
+   RUN_TEST(test_VectorPush_SimplePush);
+   RUN_TEST(test_VectorPush_UntilCapacity);
+   RUN_TEST(test_VectorPush_PastInitialCapacity);
+   RUN_TEST(test_VectorPush_PastMaxCapacity);
+   RUN_TEST(test_VectorPush_IntoVecWithZeroMaxCap);
+   RUN_TEST(test_VectorPush_InitialCapOfZero);
+   RUN_TEST(test_VectorPush_AfterResetting);
+   RUN_TEST(test_VectorPush_AfterHardResetting);
 
-   //RUN_TEST(test_VectorInsertion_AtZeroWithVectorLessThanCapacity);
-   //RUN_TEST(test_VectorInsertion_AtZeroWithVectorAtCapacity);
-   //RUN_TEST(test_VectorInsertion_AtZeroWithVectorAtMaxCapacity);
-   //RUN_TEST(test_VectorInsertion_AtEndEqualsVecPush);
-   //RUN_TEST(test_VectorInsertion_AtMiddle);
-   //RUN_TEST(test_VectorInsertion_AtMiddleOfEmptyVec);
+   RUN_TEST(test_VectorInsertion_AtZeroWithVectorLessThanCapacity);
+   RUN_TEST(test_VectorInsertion_AtZeroWithVectorAtCapacity);
+   RUN_TEST(test_VectorInsertion_AtZeroWithVectorAtMaxCapacity);
+   RUN_TEST(test_VectorInsertion_AtEndEqualsVecPush);
+   RUN_TEST(test_VectorInsertion_AtMiddle);
+   RUN_TEST(test_VectorInsertion_AtMiddleOfEmptyVec);
 
-   //RUN_TEST(test_VectorGetElement_ValidIdx);
-   //RUN_TEST(test_VectorGetElement_IdxPastLen);
-   //RUN_TEST(test_VectorGetElement_IdxPastCap);
-   //RUN_TEST(test_VectorLastElement);
+   RUN_TEST(test_VectorGetElement_ValidIdx);
+   RUN_TEST(test_VectorGetElement_IdxPastLen);
+   RUN_TEST(test_VectorGetElement_IdxPastCap);
+   RUN_TEST(test_VectorLastElement);
 
-   //RUN_TEST(test_VectorCpyElement_ValidIdx);
-   //RUN_TEST(test_VectorCpyElement_NullBufferPassedIn);
-   //RUN_TEST(test_VectorCpyElement_IdxPastLen);
-   //RUN_TEST(test_VectorCpyElement_IdxPastCap);
-   //RUN_TEST(test_VectorCpyLastElement);
-   //RUN_TEST(test_VectorRoundTrip_CpyElementToSetElement);
+   RUN_TEST(test_VectorCpyElement_ValidIdx);
+   RUN_TEST(test_VectorCpyElement_NullBufferPassedIn);
+   RUN_TEST(test_VectorCpyElement_IdxPastLen);
+   RUN_TEST(test_VectorCpyElement_IdxPastCap);
+   RUN_TEST(test_VectorCpyLastElement);
+   RUN_TEST(test_VectorRoundTrip_CpyElementToSetElement);
 
-   //RUN_TEST(test_VectorSetElement_AfterPushes);
-   //RUN_TEST(test_VectorSetElement_AfterInitLen);
-   //RUN_TEST(test_VectorSetElement_PastLen);
-   //RUN_TEST(test_VectorSetElement_PastCap);
+   RUN_TEST(test_VectorSetElement_AfterPushes);
+   RUN_TEST(test_VectorSetElement_AfterInitLen);
+   RUN_TEST(test_VectorSetElement_PastLen);
+   RUN_TEST(test_VectorSetElement_PastCap);
 
-   //RUN_TEST(test_VectorRemoveElement_AtZeroWithVectorPartiallyFull);
-   //RUN_TEST(test_VectorRemoveElement_AtZeroWithSinglePresentElement);
-   //RUN_TEST(test_VectorRemoveElement_AtZeroWithEmptyVector);
-   //RUN_TEST(test_VectorRemoveElement_AtMiddle);
-   //RUN_TEST(test_VectorRemoveElement_AtLen);
-   //RUN_TEST(test_VectorRemoveElement_LastElement);
-   //RUN_TEST(test_VectorRemoveElement_PastLen);
-   //RUN_TEST(test_VectorRemoveElement_AtZeroWithVectorPartiallyFull_WithBuf);
-   //RUN_TEST(test_VectorRemoveElement_AtZeroWithSinglePresentElement_WithBuf);
-   //RUN_TEST(test_VectorRemoveElement_AtZeroWithEmptyVector_WithBuf);
-   //RUN_TEST(test_VectorRemoveElement_AtMiddle_WithBuf);
-   //RUN_TEST(test_VectorRemoveElement_AtLen_WithBuf);
-   //RUN_TEST(test_VectorRemoveElement_LastElement_WithBuf);
-   //RUN_TEST(test_VectorRemoveElement_PastLen_WithBuf);
-   //RUN_TEST(test_VectorRemoveLastElement_EmptyVec);
+   RUN_TEST(test_VectorRemoveElement_AtZeroWithVectorPartiallyFull);
+   RUN_TEST(test_VectorRemoveElement_AtZeroWithSinglePresentElement);
+   RUN_TEST(test_VectorRemoveElement_AtZeroWithEmptyVector);
+   RUN_TEST(test_VectorRemoveElement_AtMiddle);
+   RUN_TEST(test_VectorRemoveElement_AtLen);
+   RUN_TEST(test_VectorRemoveElement_LastElement);
+   RUN_TEST(test_VectorRemoveElement_PastLen);
+   RUN_TEST(test_VectorRemoveElement_AtZeroWithVectorPartiallyFull_WithBuf);
+   RUN_TEST(test_VectorRemoveElement_AtZeroWithSinglePresentElement_WithBuf);
+   RUN_TEST(test_VectorRemoveElement_AtZeroWithEmptyVector_WithBuf);
+   RUN_TEST(test_VectorRemoveElement_AtMiddle_WithBuf);
+   RUN_TEST(test_VectorRemoveElement_AtLen_WithBuf);
+   RUN_TEST(test_VectorRemoveElement_LastElement_WithBuf);
+   RUN_TEST(test_VectorRemoveElement_PastLen_WithBuf);
+   RUN_TEST(test_VectorRemoveLastElement_EmptyVec);
 
-   //RUN_TEST(test_VectorClearElementAt_Normal);
-   //RUN_TEST(test_VectorClearElementAt_InvalidIdx);
+   RUN_TEST(test_VectorClearElementAt_Normal);
+   RUN_TEST(test_VectorClearElementAt_InvalidIdx);
 
-   //RUN_TEST(test_VectorClear_Normal);
-   //RUN_TEST(test_VectorClear_EmptyVec);
-   //RUN_TEST(test_VectorClear_InvalidVec);
+   RUN_TEST(test_VectorClear_Normal);
+   RUN_TEST(test_VectorClear_EmptyVec);
+   RUN_TEST(test_VectorClear_InvalidVec);
 
-   //RUN_TEST(test_VectorReset_EmptyVec);
-   //RUN_TEST(test_VectorReset);
+   RUN_TEST(test_VectorReset_EmptyVec);
+   RUN_TEST(test_VectorReset);
 
-   //RUN_TEST(test_VectorHardReset);
-   //RUN_TEST(test_VectorHardReset_EmptyVector);
+   RUN_TEST(test_VectorHardReset);
+   RUN_TEST(test_VectorHardReset_EmptyVector);
 
-   //RUN_TEST(test_VectorDuplicate_SmallVector);
-   //RUN_TEST(test_VectorDuplicate_ReallyLargeVector);
-   //RUN_TEST(test_VectorDuplicate_CatchBadCapDuplication);
-   //RUN_TEST(test_VectorDuplicate_NullVector);
+   RUN_TEST(test_VectorDuplicate_SmallVector);
+   RUN_TEST(test_VectorDuplicate_ReallyLargeVector);
+   RUN_TEST(test_VectorDuplicate_CatchBadCapDuplication);
+   RUN_TEST(test_VectorDuplicate_NullVector);
 
    //RUN_TEST(test_VectorMove_SmallVector);
    //RUN_TEST(test_VectorMove_ReallyLargeVector);
@@ -504,18 +504,18 @@ int main(void)
    //RUN_TEST(test_VectorRange_ClearElementsInRng_InvalidIndices);
    //RUN_TEST(test_VectorRange_ClearElementsInRng_InvalidVec);
 
-   RUN_TEST(test_VIterator_BasicRead_FullVec);
-   RUN_TEST(test_VIterator_BasicUpdate_FullVec);
-   RUN_TEST(test_VIterator_BasicRead_FullVec_Reverse);
-   RUN_TEST(test_VIterator_BasicUpdate_FullVec_Reverse);
-   RUN_TEST(test_VIterator_BasicRead_SubRng_Normal);
-   RUN_TEST(test_VIterator_BasicUpdate_SubRng_Normal);
-   RUN_TEST(test_VIterator_BasicRead_SubRng_Reverse);
-   RUN_TEST(test_VIterator_BasicUpdate_SubRng_Reverse);
-   RUN_TEST(test_VIterator_BasicRead_SubRng_NormalWithWrap);
-   RUN_TEST(test_VIterator_BasicUpdate_SubRng_NormalWithWrap);
-   RUN_TEST(test_VIterator_BasicRead_SubRng_ReverseWithWrap);
-   RUN_TEST(test_VIterator_BasicUpdate_SubRng_ReverseWithWrap);
+   //RUN_TEST(test_VIterator_BasicRead_FullVec);
+   //RUN_TEST(test_VIterator_BasicUpdate_FullVec);
+   //RUN_TEST(test_VIterator_BasicRead_FullVec_Reverse);
+   //RUN_TEST(test_VIterator_BasicUpdate_FullVec_Reverse);
+   //RUN_TEST(test_VIterator_BasicRead_SubRng_Normal);
+   //RUN_TEST(test_VIterator_BasicUpdate_SubRng_Normal);
+   //RUN_TEST(test_VIterator_BasicRead_SubRng_Reverse);
+   //RUN_TEST(test_VIterator_BasicUpdate_SubRng_Reverse);
+   //RUN_TEST(test_VIterator_BasicRead_SubRng_NormalWithWrap);
+   //RUN_TEST(test_VIterator_BasicUpdate_SubRng_NormalWithWrap);
+   //RUN_TEST(test_VIterator_BasicRead_SubRng_ReverseWithWrap);
+   //RUN_TEST(test_VIterator_BasicUpdate_SubRng_ReverseWithWrap);
 
    return UNITY_END();
 }
@@ -3951,135 +3951,135 @@ void test_VectorRange_ClearElementsInRng_InvalidVec(void)
 
 /********************************** VIterator *********************************/
 
-void test_VIterator_BasicRead_FullVec(void)
-{
-   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1, 2, 3, 4, 5}, 5, NULL);
-   int i = 1;
-   FOREACH_VEC_READ(int, val, v,
-      TEST_ASSERT_EQUAL_INT(i++, val);
-   );
-   TEST_ASSERT_EQUAL_INT(6, i);
-   VectorFree(v);
-}
-
-void test_VIterator_BasicUpdate_FullVec(void)
-{
-   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1, 2, 3, 4, 5}, 5, NULL);
-   FOREACH_VEC_REF( int*, valptr, v,
-      (*valptr)++;
-   );
-   int i = 2;
-   FOREACH_VEC_READ( int, val, v,
-      TEST_ASSERT_EQUAL_INT(i++, val);
-   );
-   TEST_ASSERT_EQUAL_INT(7, i); // Confirm that we really did iterate through all elements
-   VectorFree(v);
-}
-
-void test_VIterator_BasicRead_FullVec_Reverse(void)
-{
-   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1, 2, 3, 4, 5}, 5, NULL);
-   int i = 5;
-   FOREACH_VEC_READ_REVERSE(int, val, v,
-      TEST_ASSERT_EQUAL_INT(i--, val);
-   );
-   TEST_ASSERT_EQUAL_INT(0, i);
-   VectorFree(v);
-}
-
-void test_VIterator_BasicUpdate_FullVec_Reverse(void)
-{
-   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1, 2, 3, 4, 5}, 5, NULL);
-   int i = 0;
-   FOREACH_VEC_REF_REVERSE( int*, valptr, v,
-      *valptr += i++;
-   );
-   FOREACH_VEC_READ_REVERSE( int, val, v,
-      TEST_ASSERT_EQUAL_INT(5, val);
-   );
-   VectorFree(v);
-}
-
-void test_VIterator_BasicRead_SubRng_Normal(void)
-{
-   struct Vector * v = VectorNew(sizeof(int), 10, 20, (int[]){1,2,3,4,5,6,7,8,9,10}, 10, NULL);
-   int i = 3;
-   FOREACH_VEC_READ_RNG( int, val, v, 2, 5, IterDir_Normal,
-      TEST_ASSERT_EQUAL_INT(i++, val);
-   );
-   TEST_ASSERT_EQUAL_INT(6, i);
-   VectorFree(v);
-}
-
-void test_VIterator_BasicUpdate_SubRng_Normal(void)
-{
-   struct Vector * v = VectorNew(sizeof(int), 10, 20, (int[]){1,2,3,4,5,6,7,8,9,10}, 10, NULL);
-   FOREACH_VEC_REF_RNG( int*, ptr, v, 2, 5, IterDir_Normal,
-      (*ptr)++;
-   );
-   int i = 1;
-   FOREACH_VEC_READ( int, val, v,
-      static bool first_time = true;
-      if ( i == 3 )
-         i++;
-      else if ( i == 7 && first_time )
-      {
-         i--;
-         first_time = false;
-      }
-      TEST_ASSERT_EQUAL_INT(i++, val);
-   );
-   TEST_ASSERT_EQUAL_INT(11, i);
-   VectorFree(v);
-
-}
-
-void test_VIterator_BasicRead_SubRng_Reverse(void)
-{
-   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1,2,3,4,5,6,7}, 5, NULL);
-   int i = 4;
-   FOREACH_VEC_READ_RNG(int, val, v, 3, 0, IterDir_Reverse,
-      TEST_ASSERT_EQUAL_INT(i--, val);
-   );
-   TEST_ASSERT_EQUAL_INT(1, i);
-   VectorFree(v);
-}
-
-void test_VIterator_BasicUpdate_SubRng_Reverse(void)
-{
-   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1,2,3,4,5,6,7}, 5, NULL);
-   FOREACH_VEC_REF_RNG(int*, ptr, v, 3, 0, IterDir_Reverse,
-      (*ptr)++;
-   );
-   int i = 5;
-   FOREACH_VEC_READ_RNG(int, val, v, 3, 0, IterDir_Reverse,
-      TEST_ASSERT_EQUAL_INT(i--, val);
-   );
-   TEST_ASSERT_EQUAL_INT(2, i);
-   VectorFree(v);
-}
-
-void test_VIterator_BasicRead_SubRng_NormalWithWrap(void)
-{
-   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1,2,3,4,5}, 5, NULL);
-   FOREACH_VEC_READ_RNG(int, val, v, 3, 3, IterDir_RightWrap,
-      
-}
-
-void test_VIterator_BasicUpdate_SubRng_NormalWithWrap(void)
-{
-   TEST_ASSERT_TRUE(false);
-}
-
-void test_VIterator_BasicRead_SubRng_ReverseWithWrap(void)
-{
-   TEST_ASSERT_TRUE(false);
-}
-
-void test_VIterator_BasicUpdate_SubRng_ReverseWithWrap(void)
-{
-   TEST_ASSERT_TRUE(false);
-}
+//void test_VIterator_BasicRead_FullVec(void)
+//{
+//   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1, 2, 3, 4, 5}, 5, NULL);
+//   int i = 1;
+//   FOREACH_VEC_READ(int, val, v,
+//      TEST_ASSERT_EQUAL_INT(i++, val);
+//   );
+//   TEST_ASSERT_EQUAL_INT(6, i);
+//   VectorFree(v);
+//}
+//
+//void test_VIterator_BasicUpdate_FullVec(void)
+//{
+//   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1, 2, 3, 4, 5}, 5, NULL);
+//   FOREACH_VEC_REF( int*, valptr, v,
+//      (*valptr)++;
+//   );
+//   int i = 2;
+//   FOREACH_VEC_READ( int, val, v,
+//      TEST_ASSERT_EQUAL_INT(i++, val);
+//   );
+//   TEST_ASSERT_EQUAL_INT(7, i); // Confirm that we really did iterate through all elements
+//   VectorFree(v);
+//}
+//
+//void test_VIterator_BasicRead_FullVec_Reverse(void)
+//{
+//   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1, 2, 3, 4, 5}, 5, NULL);
+//   int i = 5;
+//   FOREACH_VEC_READ_REVERSE(int, val, v,
+//      TEST_ASSERT_EQUAL_INT(i--, val);
+//   );
+//   TEST_ASSERT_EQUAL_INT(0, i);
+//   VectorFree(v);
+//}
+//
+//void test_VIterator_BasicUpdate_FullVec_Reverse(void)
+//{
+//   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1, 2, 3, 4, 5}, 5, NULL);
+//   int i = 0;
+//   FOREACH_VEC_REF_REVERSE( int*, valptr, v,
+//      *valptr += i++;
+//   );
+//   FOREACH_VEC_READ_REVERSE( int, val, v,
+//      TEST_ASSERT_EQUAL_INT(5, val);
+//   );
+//   VectorFree(v);
+//}
+//
+//void test_VIterator_BasicRead_SubRng_Normal(void)
+//{
+//   struct Vector * v = VectorNew(sizeof(int), 10, 20, (int[]){1,2,3,4,5,6,7,8,9,10}, 10, NULL);
+//   int i = 3;
+//   FOREACH_VEC_READ_RNG( int, val, v, 2, 5, IterDir_Normal,
+//      TEST_ASSERT_EQUAL_INT(i++, val);
+//   );
+//   TEST_ASSERT_EQUAL_INT(6, i);
+//   VectorFree(v);
+//}
+//
+//void test_VIterator_BasicUpdate_SubRng_Normal(void)
+//{
+//   struct Vector * v = VectorNew(sizeof(int), 10, 20, (int[]){1,2,3,4,5,6,7,8,9,10}, 10, NULL);
+//   FOREACH_VEC_REF_RNG( int*, ptr, v, 2, 5, IterDir_Normal,
+//      (*ptr)++;
+//   );
+//   int i = 1;
+//   FOREACH_VEC_READ( int, val, v,
+//      static bool first_time = true;
+//      if ( i == 3 )
+//         i++;
+//      else if ( i == 7 && first_time )
+//      {
+//         i--;
+//         first_time = false;
+//      }
+//      TEST_ASSERT_EQUAL_INT(i++, val);
+//   );
+//   TEST_ASSERT_EQUAL_INT(11, i);
+//   VectorFree(v);
+//
+//}
+//
+//void test_VIterator_BasicRead_SubRng_Reverse(void)
+//{
+//   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1,2,3,4,5,6,7}, 5, NULL);
+//   int i = 4;
+//   FOREACH_VEC_READ_RNG(int, val, v, 3, 0, IterDir_Reverse,
+//      TEST_ASSERT_EQUAL_INT(i--, val);
+//   );
+//   TEST_ASSERT_EQUAL_INT(1, i);
+//   VectorFree(v);
+//}
+//
+//void test_VIterator_BasicUpdate_SubRng_Reverse(void)
+//{
+//   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1,2,3,4,5,6,7}, 5, NULL);
+//   FOREACH_VEC_REF_RNG(int*, ptr, v, 3, 0, IterDir_Reverse,
+//      (*ptr)++;
+//   );
+//   int i = 5;
+//   FOREACH_VEC_READ_RNG(int, val, v, 3, 0, IterDir_Reverse,
+//      TEST_ASSERT_EQUAL_INT(i--, val);
+//   );
+//   TEST_ASSERT_EQUAL_INT(2, i);
+//   VectorFree(v);
+//}
+//
+//void test_VIterator_BasicRead_SubRng_NormalWithWrap(void)
+//{
+////   struct Vector * v = VectorNew(sizeof(int), 5, 10, (int[]){1,2,3,4,5}, 5, NULL);
+////   FOREACH_VEC_READ_RNG(int, val, v, 3, 3, IterDir_RightWrap,
+////      
+//}
+//
+//void test_VIterator_BasicUpdate_SubRng_NormalWithWrap(void)
+//{
+//   TEST_ASSERT_TRUE(false);
+//}
+//
+//void test_VIterator_BasicRead_SubRng_ReverseWithWrap(void)
+//{
+//   TEST_ASSERT_TRUE(false);
+//}
+//
+//void test_VIterator_BasicUpdate_SubRng_ReverseWithWrap(void)
+//{
+//   TEST_ASSERT_TRUE(false);
+//}
 
 /************************* Local Function Definitions *************************/
 
