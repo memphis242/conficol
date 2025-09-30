@@ -87,6 +87,8 @@ void   default_reclaim(void * old_ptr, size_t, void *);
 
 /**
  * @brief Randomizes the bytes for the region passed in.
+ * @note This is only meant to be used internally, and `assert` statements on
+ *       ptr being non-NULL and nbytes being > 0 are made.
  */
 void memset_scramble(void * const ptr, size_t nbytes);
 
