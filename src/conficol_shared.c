@@ -59,10 +59,10 @@ void memset_scramble(void * const ptr, size_t nbytes)
    biski64_seed(&rng_state, seed);
 
    uint64_t * u64_ptr = (uint64_t *)ptr;
-   for ( size_t i = 0; i < (nbytes / 4); ++i, ++u64_ptr )
+   for ( size_t i = 0; i < (nbytes / 8); ++i, ++u64_ptr )
       *u64_ptr = biski64_next(&rng_state);
 
-   uint8_t leftover_bytes = nbytes % 4;
+   uint8_t leftover_bytes = nbytes % 8;
    if ( leftover_bytes > 0 )
    {
       uint64_t final_bytes = biski64_next(&rng_state);

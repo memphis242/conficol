@@ -187,11 +187,10 @@ void VectorFree( struct Vector * self )
    {
       if ( (self->mem_mgr.reclaim != NULL) && (self->arr != NULL) )
       {
-         // TODO: memset_scramble(self->arr, self->capacity * self->element_size);
-         memset(self->arr, 0, self->capacity * self->element_size);
+         memset_scramble(self->arr, self->capacity * self->element_size);
          self->mem_mgr.reclaim(self->arr, self->capacity * self->element_size, self->mem_mgr.arena );
       }
-      memset(self, 0, sizeof(struct Vector));
+      memset_scramble(self, sizeof(struct Vector));
       vec_pool_reclaim(self);
    }
 }
@@ -258,10 +257,9 @@ bool VectorMove( struct Vector * dest, struct Vector * src )
    }
 
    // Free resources of existing destination vector, if applicable
-   // TODO: memset_scramble(dest->arr, dest->capacity * dest->element_size);
    if ( dest->arr != NULL )
    {
-      memset(dest->arr, 0, dest->capacity * dest->element_size);
+      memset_scramble(dest->arr, dest->capacity * dest->element_size);
       dest->mem_mgr.reclaim(dest->arr, dest->element_size * dest->capacity, dest->mem_mgr.arena);
    }
 
