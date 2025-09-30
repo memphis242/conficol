@@ -246,6 +246,7 @@ struct Vector * VectorDuplicate( const struct Vector * self )
 bool VectorMove( struct Vector * dest, struct Vector * src )
 {
    assert( dest == NULL || (dest != NULL && dest->mem_mgr.reclaim != NULL) );
+
    if ( (NULL == src) || !vec_isalloc(src) || (NULL == dest) || !vec_isalloc(dest) ||
         (dest->element_size != src->element_size) ||
         (dest->mem_mgr.alloc   != src->mem_mgr.alloc) ||
@@ -257,19 +258,23 @@ bool VectorMove( struct Vector * dest, struct Vector * src )
    }
 
    // Free resources of existing destination vector, if applicable
-   dest->mem_mgr.reclaim(dest->arr, dest->element_size * dest->capacity, dest->mem_mgr.arena);
+   // TODO: memset_scramble(dest->arr, dest->capacity * dest->element_size);
+   if ( dest->arr != NULL )
+   {
+      memset(dest->arr, 0, dest->capacity * dest->element_size);
+      dest->mem_mgr.reclaim(dest->arr, dest->element_size * dest->capacity, dest->mem_mgr.arena);
+   }
 
    // Move resources over
-   dest->capacity = src->capacity;
    dest->arr = src->arr;
-   dest->max_capacity = src->max_capacity;
    dest->len = src->len;
+   dest->capacity = src->capacity;
+   dest->max_capacity = src->max_capacity;
 
    // Leave original vector in valid but empty state
    // Note: This is not the same as hard resetting. We don't want the original
    //       underlying array to be free'd because "ownership" of that has been
    //       moved to dest.
-   memset_scramble(src->arr, src->capacity * src->element_size);
    src->capacity = 0;
    src->arr = NULL;
    src->len = 0;

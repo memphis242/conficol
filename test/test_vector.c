@@ -379,10 +379,10 @@ int main(void)
    RUN_TEST(test_VectorDuplicate_CatchBadCapDuplication);
    RUN_TEST(test_VectorDuplicate_NullVector);
 
-   //RUN_TEST(test_VectorMove_SmallVector);
-   //RUN_TEST(test_VectorMove_ReallyLargeVector);
-   //RUN_TEST(test_VectorMove_NullVector);
-   //RUN_TEST(test_VectorMove_MismatchedVec);
+   RUN_TEST(test_VectorMove_SmallVector);
+   RUN_TEST(test_VectorMove_ReallyLargeVector);
+   RUN_TEST(test_VectorMove_NullVector);
+   RUN_TEST(test_VectorMove_MismatchedVec);
 
    //RUN_TEST(test_VectorsAreEqual_SameVectors);
    //RUN_TEST(test_VectorsAreEqual_DifferentElementSz);
