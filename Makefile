@@ -279,7 +279,8 @@ COMPILER_WARNING_FLAGS = \
     -Wconversion -Wdouble-promotion -Wnull-dereference \
     -Wwrite-strings -Wformat=2 -Wformat-overflow=2 \
     -Wformat-signedness -Wuseless-cast -Wstrict-prototypes \
-    -Wcast-align=strict -Wimplicit-fallthrough=3 -Wswitch-default \
+    -Wcast-align=strict -Wcast-qual \
+    -Wimplicit-fallthrough=3 -Wswitch-default \
     -Wswitch-enum -Wfloat-equal -Wuse-after-free=2 \
     -Wdeprecated-declarations -Wmissing-prototypes -Wparentheses \
     -Wreturn-type -Wlogical-op -Wstrict-aliasing \
@@ -295,7 +296,8 @@ COMPILER_WARNINGS_TEST_BUILD = \
     -Wconversion -Wdouble-promotion -Wnull-dereference \
     -Wwrite-strings -Wformat=2 -Wformat-overflow=2 \
     -Wformat-signedness \
-    -Wcast-align=strict -Wimplicit-fallthrough=3 -Wswitch-default \
+    -Wcast-align=strict -Wcast-qual \
+    -Wimplicit-fallthrough=3 -Wswitch-default \
     -Wswitch-enum -Wfloat-equal -Wuse-after-free=2 \
     -Wdeprecated-declarations -Wmissing-prototypes -Wparentheses \
     -Wreturn-type -Wlogical-op -Wstrict-aliasing \
