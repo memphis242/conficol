@@ -20,17 +20,11 @@
 #include <assert.h>
 #include <limits.h>
 
-#include "ccol_shared.h"
+#include "conficol_shared.h"
 #include "vector_cfg.h"
 #include "vector.h"
 
 /* Local Macro Definitions */
-
-#ifdef UNIT_TEST
-#define STATIC
-#else
-#define STATIC static
-#endif
 
 // Macro constants
 #define EXPANSION_FACTOR                    (2)   // TODO: Make the expansion factor user-configurable - note that a floating-point number causes a warning: conversion from 'size_t' {aka 'long long unsigned int'} to 'double' may change value [-Wconversion]
@@ -59,6 +53,7 @@
 #define PTR_TO_IDX(vec, idx) ( (uint8_t *)((vec)->arr) + ((vec)->element_size * (idx)) )
 
 /* Local Datatypes */
+
 struct Vector
 {
    void * arr;
@@ -90,19 +85,18 @@ static void shiftn( struct Vector *, size_t, enum ShiftDir, size_t);
 
 /******************************************************************************/
 struct Vector * VectorNew( size_t element_size,
-                           size_t initial_capacity,
+                           size_t init_capacity,
                            size_t max_capacity,
-                           size_t initial_len,
+                           const void * init_data,
+                           size_t init_dlen,
                            const struct Allocator * mem_mgr )
 {
    // Invalid inputs
    if ( (0 == element_size) ||
-        (initial_capacity > MAX_VEC_LEN) ||
+        (init_capacity > MAX_VEC_LEN) ||
         (0 == max_capacity) ||
-        (initial_capacity > max_capacity) ||
-        (initial_len > initial_capacity) )
+        (init_capacity > max_capacity) )
    {
-      // TODO: Vector constructor exception
       return NULL;
    }
 
@@ -115,7 +109,7 @@ struct Vector * VectorNew( size_t element_size,
    if ( (NULL == mem_mgr) ||
         (NULL == mem_mgr->alloc) || (NULL == mem_mgr->realloc) || (NULL == mem_mgr->reclaim) )
    {
-      // TODO: Throw exception if user passed in a partially complete memory manager
+      // TODO: Return error code informing the user an incorrect configuration of mem_mgr was sent in.
       new_vec->mem_mgr = DEFAULT_ALLOCATOR;
    }
    else
@@ -130,30 +124,40 @@ struct Vector * VectorNew( size_t element_size,
       new_vec->mem_mgr.alloca_init( new_vec->mem_mgr.arena );
    }
 
-   if ( 0 == initial_capacity )
+   if ( 0 == init_capacity )
    {
       new_vec->arr = NULL;
    }
    else
    {
-      new_vec->arr = new_vec->mem_mgr.alloc( element_size * initial_capacity,
+      new_vec->arr = new_vec->mem_mgr.alloc( element_size * init_capacity,
                                              new_vec->mem_mgr.arena );
    }
 
    // If we failed to allocate space for the array...
-   if ( (initial_capacity > 0) && (NULL == new_vec->arr) )
+   if ( (init_capacity > 0) && (NULL == new_vec->arr) )
    {
-      // TODO: Throw exception to inform user...
+      // TODO: Return error code informing user that allocation of underlying array failed.
       new_vec->capacity = 0;
       new_vec->len = 0;
    }
    else
    {
-      new_vec->capacity = initial_capacity;
-      if ( initial_len > 0 )
+      new_vec->capacity = init_capacity;
+      if ( (init_data != NULL) && (init_dlen <= init_capacity) )
       {
-         memset( new_vec->arr, 0, (element_size * initial_len) );
-         new_vec->len = initial_len;
+         memcpy( new_vec->arr, init_data, element_size * init_dlen );
+         new_vec->len = init_dlen;
+      }
+      else if ( (init_data == NULL) && (init_dlen > 0) && (init_dlen <= init_capacity) )
+      {
+         memset( new_vec->arr, 0, init_dlen * element_size );
+         new_vec->len = init_dlen;
+      }
+      else if ( init_dlen > init_capacity )
+      {
+         // TODO: Inform user they sent in an invalid init_dlen
+         new_vec->len = 0;
       }
       else
       {
@@ -183,8 +187,10 @@ void VectorFree( struct Vector * self )
    {
       if ( (self->mem_mgr.reclaim != NULL) && (self->arr != NULL) )
       {
+         memset_scramble(self->arr, self->capacity * self->element_size);
          self->mem_mgr.reclaim(self->arr, self->capacity * self->element_size, self->mem_mgr.arena );
       }
+      memset_scramble(self, sizeof(struct Vector));
       vec_pool_reclaim(self);
    }
 }
@@ -192,7 +198,7 @@ void VectorFree( struct Vector * self )
 /******************************************************************************/
 struct Vector * VectorDuplicate( const struct Vector * self )
 {
-   if ( (NULL == self) ||
+   if ( (NULL == self) || !vec_isalloc(self) ||
         // Check for internal paradoxes within passed in vector...
         (0 == self->element_size) ||
         (self->len > self->capacity) ||
@@ -239,7 +245,8 @@ struct Vector * VectorDuplicate( const struct Vector * self )
 bool VectorMove( struct Vector * dest, struct Vector * src )
 {
    assert( dest == NULL || (dest != NULL && dest->mem_mgr.reclaim != NULL) );
-   if ( (NULL == src) || (NULL == dest) ||
+
+   if ( (NULL == src) || !vec_isalloc(src) || (NULL == dest) || !vec_isalloc(dest) ||
         (dest->element_size != src->element_size) ||
         (dest->mem_mgr.alloc   != src->mem_mgr.alloc) ||
         (dest->mem_mgr.realloc != src->mem_mgr.realloc) ||
@@ -250,13 +257,17 @@ bool VectorMove( struct Vector * dest, struct Vector * src )
    }
 
    // Free resources of existing destination vector, if applicable
-   dest->mem_mgr.reclaim(dest->arr, dest->element_size * dest->capacity, dest->mem_mgr.arena);
+   if ( dest->arr != NULL )
+   {
+      memset_scramble(dest->arr, dest->capacity * dest->element_size);
+      dest->mem_mgr.reclaim(dest->arr, dest->element_size * dest->capacity, dest->mem_mgr.arena);
+   }
 
    // Move resources over
-   dest->capacity = src->capacity;
    dest->arr = src->arr;
-   dest->max_capacity = src->max_capacity;
    dest->len = src->len;
+   dest->capacity = src->capacity;
+   dest->max_capacity = src->max_capacity;
 
    // Leave original vector in valid but empty state
    // Note: This is not the same as hard resetting. We don't want the original
@@ -273,7 +284,7 @@ bool VectorMove( struct Vector * dest, struct Vector * src )
 bool VectorsAreEqual( const struct Vector * a, const struct Vector * b )
 {
    // Check for NULL pointers
-   if ( (NULL == a) || (NULL == b) )   return false;
+   if ( (NULL == a) || !vec_isalloc(a) || (NULL == b) || !vec_isalloc(b) )   return false;
 
    // First check lengths
    if (a->len != b->len) return false;
@@ -307,7 +318,7 @@ bool VectorsAreEqual( const struct Vector * a, const struct Vector * b )
 struct Vector * VectorConcatenate( const struct Vector * v1,
                                    const struct Vector * v2 )
 {
-   if ( (NULL == v1) || (NULL == v2) ||
+   if ( (NULL == v1) || !vec_isalloc(v1) || (NULL == v2) || !vec_isalloc(v2) ||
         (v1->element_size != v2->element_size) ||
         (v2->len > (MAX_VEC_LEN - v1->len)) // Unsupported length
       )
@@ -335,7 +346,7 @@ struct Vector * VectorConcatenate( const struct Vector * v1,
       NewVec = VectorNew( v1->element_size,
                            DEFAULT_INITIAL_CAPACITY,
                            DEFAULT_INITIAL_CAPACITY * DEFAULT_MAX_CAPACITY_FACTOR,
-                           0,
+                           NULL, 0,
                            &v1->mem_mgr );
    }
 
@@ -365,7 +376,7 @@ struct Vector * VectorConcatenate( const struct Vector * v1,
       NewVec = VectorNew( v1->element_size,
                            new_vec_cap,
                            new_vec_max_cap,
-                           new_vec_len,
+                           NULL, new_vec_len,
                            &v1->mem_mgr );
       if ( (NewVec != NULL) && (NewVec->arr != NULL) )
       {
@@ -386,7 +397,7 @@ struct Vector * VectorConcatenate( const struct Vector * v1,
 /******************************************************************************/
 size_t VectorLength( const struct Vector * self )
 {
-   if ( NULL == self )
+   if ( (NULL == self) || !vec_isalloc(self) )
    {
       return 0;
    }
@@ -396,7 +407,7 @@ size_t VectorLength( const struct Vector * self )
 /******************************************************************************/
 size_t VectorCapacity( const struct Vector * self )
 {
-   if ( NULL == self )
+   if ( (NULL == self) || !vec_isalloc(self) )
    {
       return 0;
    }
@@ -406,7 +417,7 @@ size_t VectorCapacity( const struct Vector * self )
 /******************************************************************************/
 size_t VectorMaxCapacity( const struct Vector * self )
 {
-   if ( NULL == self )
+   if ( (NULL == self) || !vec_isalloc(self) )
    {
       return 0;
    }
@@ -416,7 +427,7 @@ size_t VectorMaxCapacity( const struct Vector * self )
 /******************************************************************************/
 size_t VectorElementSize( const struct Vector * self )
 {
-   if ( NULL == self )
+   if ( (NULL == self) || !vec_isalloc(self) )
    {
       return 0;
    }
@@ -426,7 +437,7 @@ size_t VectorElementSize( const struct Vector * self )
 /******************************************************************************/
 bool VectorIsEmpty( const struct Vector * self )
 {
-   if ( NULL == self )
+   if ( (NULL == self) || !vec_isalloc(self) )
    {
       return true;
    }
@@ -436,7 +447,7 @@ bool VectorIsEmpty( const struct Vector * self )
 /******************************************************************************/
 bool VectorIsFull( const struct Vector * self )
 {
-   if ( NULL == self )
+   if ( (NULL == self) || !vec_isalloc(self) )
    {
       return false;
    }
@@ -448,7 +459,7 @@ bool VectorPush( struct Vector * self, const void * element )
 {
    // Early return op
    // Invalid inputs
-   if ( (NULL == self) || (NULL == element) )
+   if ( (NULL == self) || !vec_isalloc(self) || (NULL == element) )
    {
       // TODO: Throw exception
       return false;
@@ -490,7 +501,7 @@ bool VectorInsert( struct Vector * self,
 {
    // Early return op
    // Invalid inputs
-   if ( (NULL == self) || (NULL == element) || (idx > self->len) )
+   if ( (NULL == self) || !vec_isalloc(self) || (NULL == element) || (idx > self->len) )
    {
       // TODO: Throw exception
       return false;
@@ -530,7 +541,7 @@ bool VectorInsert( struct Vector * self,
 /******************************************************************************/
 void * VectorGet( const struct Vector * self, size_t idx )
 {
-   if ( (NULL == self) || (idx >= self->len) )
+   if ( (NULL == self) || !vec_isalloc(self) || (idx >= self->len) )
    {
       return NULL;
    }
@@ -543,7 +554,7 @@ void * VectorGet( const struct Vector * self, size_t idx )
 /******************************************************************************/
 void * VectorLastElement( const struct Vector * self )
 {
-   if ( (NULL == self) || (0 == self->len) )
+   if ( (NULL == self) || !vec_isalloc(self) || (0 == self->len) )
    {
       return NULL;
    }
@@ -559,7 +570,7 @@ void * VectorLastElement( const struct Vector * self )
 /******************************************************************************/
 bool VectorCpyElementAt( const struct Vector * self, size_t idx, void * data )
 {
-   if ( (NULL == self) || (idx >= self->len) || (NULL == data))
+   if ( (NULL == self) || !vec_isalloc(self) || (idx >= self->len) || (NULL == data))
    {
       return false;
    }
@@ -575,7 +586,7 @@ bool VectorCpyElementAt( const struct Vector * self, size_t idx, void * data )
 /******************************************************************************/
 bool VectorCpyLastElement( const struct Vector * self, void * data )
 {
-   if ( (NULL == self) || (0 == self->len) || (NULL == data) )
+   if ( (NULL == self) || !vec_isalloc(self) || (0 == self->len) || (NULL == data) )
    {
       return false;
    }
@@ -598,7 +609,7 @@ bool VectorSet( struct Vector * self,
                            size_t idx,
                            const void * element )
 {
-   if ( (NULL == self) || (idx >= self->len) || (NULL == element) )
+   if ( (NULL == self) || !vec_isalloc(self) || (idx >= self->len) || (NULL == element) )
    {
       return false;
    }
@@ -614,7 +625,7 @@ bool VectorSet( struct Vector * self,
 /******************************************************************************/
 bool VectorRemove( struct Vector * self, size_t idx, void * data )
 {
-   if ( (NULL == self) || (idx >= self->len) || (self->len == 0) )
+   if ( (NULL == self) || !vec_isalloc(self) || (idx >= self->len) || (self->len == 0) )
    {
       return false;
    }
@@ -640,14 +651,14 @@ bool VectorRemove( struct Vector * self, size_t idx, void * data )
 /******************************************************************************/
 bool VectorRemoveLastElement( struct Vector * self, void * data )
 {
-   if ( VectorLength(self) == 0 ) return false;
+   if ( (NULL == self) || !vec_isalloc(self) || VectorLength(self) == 0 ) return false;
    return VectorRemove( self, VectorLength(self) - 1, data );
 }
 
 /******************************************************************************/
 bool VectorClearElementAt( struct Vector * self, size_t idx )
 {
-   if ( (NULL == self) || (NULL == self->arr) ||
+   if ( (NULL == self) || !vec_isalloc(self) || (NULL == self->arr) ||
         (0 == self->len) || (idx >= self->len) )
    {
       return false;
@@ -665,15 +676,15 @@ bool VectorClearElementAt( struct Vector * self, size_t idx )
 
 bool VectorClear( struct Vector * self )
 {
-   if ( self != NULL && self->len == 0 ) return true; // trivial clear
-   else if ( self == NULL ) return false;
+   if ( self != NULL && vec_isalloc(self) && self->len == 0 ) return true; // trivial clear
+   else if ( self == NULL || !vec_isalloc(self) ) return false;
    return VectorRangeClear(self, 0, self->len);
 }
 
 /******************************************************************************/
 bool VectorReset( struct Vector * self )
 {
-   if ( NULL == self )
+   if ( (NULL == self) || !vec_isalloc(self) )
    {
       return false;
    }
@@ -685,7 +696,7 @@ bool VectorReset( struct Vector * self )
 /******************************************************************************/
 bool VectorHardReset( struct Vector * self )
 {
-   if ( NULL == self )
+   if ( (NULL == self) || !vec_isalloc(self) )
    {
       return false;
    }
@@ -718,7 +729,7 @@ bool VectorHardReset( struct Vector * self )
 
 struct Vector * VectorSplitAt( struct Vector * self, size_t idx )
 {
-   if ( (NULL == self) || (self->len == 0) || (self->capacity == 0) ||
+   if ( (NULL == self) || !vec_isalloc(self) || (self->len == 0) || (self->capacity == 0) ||
         (idx >= self->len) || (idx == 0) )
    {
       // TODO: Throw exception
@@ -731,10 +742,10 @@ struct Vector * VectorSplitAt( struct Vector * self, size_t idx )
 
    size_t new_vec_len = self->len - idx;
    struct Vector * new_vec = VectorNew( self->element_size,
-                                           new_vec_len * 2,
-                                           new_vec_len * 4,
-                                           new_vec_len,
-                                           &self->mem_mgr );
+                                        new_vec_len * 2,
+                                        new_vec_len * 4,
+                                        self->arr, new_vec_len,
+                                        &self->mem_mgr );
    if ( (NULL == new_vec) || (NULL == new_vec->arr) )
    {
       return NULL;
@@ -760,7 +771,7 @@ struct Vector * VectorSlice( const struct Vector * self,
                                size_t idx_start,
                                size_t idx_end )
 {
-   if ( (NULL == self) || (self->len == 0) || (self->capacity == 0) ||
+   if ( (NULL == self) || !vec_isalloc(self) || (self->len == 0) || (self->capacity == 0) ||
         (idx_start >= self->len) || (idx_end > self->len) ||
         (idx_start > idx_end)    || (idx_end == 0) )
    {
@@ -780,10 +791,10 @@ struct Vector * VectorSlice( const struct Vector * self,
 
    size_t new_vec_len = idx_end - idx_start;
    struct Vector * new_vec = VectorNew( self->element_size,
-                                           new_vec_len * 2,
-                                           new_vec_len * 4,
-                                           new_vec_len,
-                                           &self->mem_mgr );
+                                        new_vec_len * 2,
+                                        new_vec_len * 4,
+                                        PTR_TO_IDX(self, idx_start), new_vec_len,
+                                        &self->mem_mgr );
    if ( (NULL == new_vec) || (NULL == new_vec->arr) )
    {
       return NULL;
@@ -801,7 +812,7 @@ struct Vector * VectorSlice( const struct Vector * self,
 
 bool VectorRangePush( struct Vector * self, const void * data, size_t dlen )
 {
-   if ( (NULL == self) || (NULL == data) ||
+   if ( (NULL == self) || !vec_isalloc(self) || (NULL == data) ||
         ( (self->len + dlen) > self->max_capacity ) || (dlen == 0) )
    {
       // TODO: Throw exception
@@ -843,7 +854,7 @@ bool VectorRangeInsert( struct Vector * self,
                         const void * data,
                         size_t dlen )
 {
-   if ( (NULL == self) || (NULL == data) ||
+   if ( (NULL == self) || !vec_isalloc(self) || (NULL == data) ||
         ( (self->len + dlen) > self->max_capacity ) || (dlen == 0) ||
         (idx > self->len) )
    {
@@ -895,7 +906,7 @@ bool VectorRangeCpy( const struct Vector * self,
                      size_t idx_end,
                      void * buffer )
 {
-   if ( (NULL == self) || (NULL == buffer) ||
+   if ( (NULL == self) || !vec_isalloc(self) || (NULL == buffer) ||
         (idx_start >= self->len) || (idx_end > self->len) ||
         (idx_start >= idx_end)
       )
@@ -920,7 +931,7 @@ bool VectorRangeCpyToEnd( const struct Vector * self,
                           size_t idx,
                           void * buffer )
 {
-   if ( NULL == self )  return false;
+   if ( (NULL == self) || !vec_isalloc(self) )  return false;
    return VectorRangeCpy(self, idx, self->len, buffer);
 }
 
@@ -932,7 +943,7 @@ bool VectorRangeSetWithArr( struct Vector * self,
                      size_t idx_end,
                      const void * arr )
 {
-   if ( (NULL == self) || (NULL == arr) ||
+   if ( (NULL == self) || !vec_isalloc(self) || (NULL == arr) ||
         (idx_start >= self->len) || (idx_end > self->len) ||
         (idx_start >= idx_end) ) 
    {
@@ -954,7 +965,7 @@ bool VectorRangeSetWithArr( struct Vector * self,
 
 bool VectorRangeSetToVal( struct Vector * self, size_t idx_start, size_t idx_end, const void * val )
 {
-   if ( (NULL == self) || (NULL == val) ||
+   if ( (NULL == self) || !vec_isalloc(self) || (NULL == val) ||
         (idx_start >= self->len) || (idx_end > self->len) ||
         (idx_start >= idx_end) ) 
    {
@@ -979,7 +990,7 @@ bool VectorRangeRemove( struct Vector * self,
                         size_t idx_end,
                         void * buf )
 {
-   if ( (NULL == self) || (NULL == self->arr) ||
+   if ( (NULL == self) || !vec_isalloc(self) || (NULL == self->arr) ||
         (idx_start >= self->len) || (idx_end > self->len) ||
         (idx_start >= idx_end) || (self->len == 0) ) 
    {
@@ -1029,7 +1040,7 @@ bool VectorRangeClear( struct Vector * self,
             ( (self->capacity == 0 && self->arr == NULL) ||
               (self->capacity >  0 && self->arr != NULL) ) ) );
 
-   if ( self == NULL ||
+   if ( self == NULL || !vec_isalloc(self) ||
         idx_start >= self->len || idx_end > self->len ||
         idx_start >= idx_end )
    {
@@ -1050,13 +1061,12 @@ bool VectorRangeClear( struct Vector * self,
 }
 
 /******************************************************************************/
-/******************************************************************************/
 
 /* Private Function Implementations */
 
 /**
  * @brief Expands the capacity of the vector to accommodate additional elements.
- * 
+ *
  * @param self Vector handle.
  * @return true if the expansion was successful, false otherwise.
  */
@@ -1130,7 +1140,7 @@ static bool vec_expandby( struct Vector * self, size_t add_cap )
    assert( (self->capacity == 0 && self->arr == NULL) ||
            (self->capacity >  0 && self->arr != NULL) );
    assert(self->len <= self->capacity);
-   assert(self->len <= self->max_capacity); 
+   assert(self->len <= self->max_capacity);
    assert(self->mem_mgr.realloc != NULL);
 
    // If there's no space in the vector, we can't expand
@@ -1215,9 +1225,8 @@ static void shiftn( struct Vector * self, size_t start_idx,
    memmove( new_spot, old_spot, (self->len - start_idx) * self->element_size );
 }
 
-/******************************************************************************/
 
-/*************************** Vector Arena Material ****************************/
+/********************** Fixed-Size Object Arena Material **********************/
 
 struct VectorPoolItem
 {
@@ -1231,13 +1240,13 @@ struct VectorPool
    size_t next_idx;
 };
 
-STATIC struct VectorPool VecPool;
+static struct VectorPool VecPool;
 
 /**
  * @brief Allocates a new Vector structure from a static arena.
  * @return Pointer to the allocated Vector struct if successful, NULL otherwise.
  */
-STATIC struct Vector * vec_pool_dispatch(void)
+static struct Vector * vec_pool_dispatch(void)
 {
    assert( VecPool.next_idx < VEC_STRUCT_POOL_SIZE );
    assert( VecPool.pool != NULL );
@@ -1277,7 +1286,7 @@ STATIC struct Vector * vec_pool_dispatch(void)
    return new_vec;
 }
 
-STATIC void vec_pool_reclaim(const struct Vector * ptr)
+static void vec_pool_reclaim(const struct Vector * ptr)
 {
    if ( NULL == ptr )
    {
@@ -1306,16 +1315,29 @@ STATIC void vec_pool_reclaim(const struct Vector * ptr)
    }
 }
 
-STATIC bool vec_isalloc(const struct Vector * ptr)
+static bool vec_isalloc(const struct Vector * ptr)
 {
-   for ( size_t i = 0; i < VEC_STRUCT_POOL_SIZE; i++ )
+   if ( ptr == NULL ||
+        ptr < &VecPool.pool[0].vec ||
+        ptr > &VecPool.pool[VEC_STRUCT_POOL_SIZE - 1].vec )
    {
-      if ( ptr == &VecPool.pool[i].vec )
-      {
-         return VecPool.pool[i].is_allocated;
-      }
+      return false;
+   }
+
+   // Assumes the objects in VecPool are arranged in increasing order of memory
+   int left = 0, right = VEC_STRUCT_POOL_SIZE - 1;
+   int mid;
+   while ( left <= right )
+   {
+      mid = left + (right - left) / 2;
+
+      if ( ptr == &VecPool.pool[mid].vec )
+         return VecPool.pool[mid].is_allocated;
+      else if ( ptr < &VecPool.pool[mid].vec )
+         right = mid - 1;
+      else
+         left = mid + 1;
    }
 
    return false;
 }
-

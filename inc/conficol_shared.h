@@ -1,14 +1,14 @@
 /**
- * @file ccol_shared.h
- * @brief Shared macros and datatypes across the ccol library.
+ * @file conficol_shared.h
+ * @brief Shared macros and datatypes across the conficol library.
  *
  * @author Abdulla Almosalami (memphis242)
  * @date Jul 16, 2025
  * @copyright MIT License
  */
 
-#ifndef CCOL_SHARED_H
-#define CCOL_SHARED_H
+#ifndef CONFICOL_SHARED_H
+#define CONFICOL_SHARED_H
 
 /* File Inclusions */
 #include <stdint.h>
@@ -85,4 +85,16 @@ void * default_alloc(size_t req_sz, void *);
 void * default_realloc(void * old_ptr, size_t new_sz, size_t, void *);
 void   default_reclaim(void * old_ptr, size_t, void *);
 
-#endif // CCOL_SHARED_H
+/**
+ * @brief Randomizes the bytes for the region passed in.
+ * @note This is only meant to be used internally, and `assert` statements on
+ *       ptr being non-NULL and nbytes being > 0 are made.
+ */
+void memset_scramble(void * const ptr, size_t nbytes);
+
+/**
+ * @brief Keeps track of tokens and issues new ones to registered contexts.
+ */
+void tocken_tracker(void);
+
+#endif // CONFICOL_SHARED_H

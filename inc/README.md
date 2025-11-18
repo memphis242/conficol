@@ -17,7 +17,7 @@ struct Allocator
 ```c
 /*** Constructor/Destructor ***/
 
-struct Vector * VectorNew( size_t element_size, size_t initial_capacity, size_t max_capacity, size_t initial_len, const struct Allocator * mem_mgr );
+struct Vector * VectorNew( size_t element_size, size_t init_capacity, size_t max_capacity, void * init_data, size_t init_dlen, const struct Allocator * mem_mgr );
 void VectorFree( struct Vector * self );
 
 /*** Vector-Vector Operations (Copy/Move) ***/
@@ -66,11 +66,20 @@ bool VectorRangeSetToVal( struct Vector * self, size_t idx_start, size_t idx_end
 bool VectorRangeRemove( struct Vector * self, size_t idx_start, size_t idx_end, void * buf );
 bool VectorRangeClear( struct Vector * self, size_t idx_start, size_t idx_end );
 ```
+
 ### Example Usage
 ```c
-struct Vector * vec = VectorNew( sizeof(int), 10, 100, 0, NULL );
+struct Vector * vec = VectorNew( sizeof(int),      // element size
+                                 10,               // initial vector length
+                                 100,              // max capacity of the vector
+                                 (int[]){0, 1, 2}, // initial data to fill into vector
+                                 3,                // num of elements in init data
+                                 NULL );           // custom allocator (if desired)
+// vec: { 0, 1, 2 }
 (void)VectorPush( vec, &(int){42} ); // occassionally more convenient to use compound literals
+// vec: { 0, 1, 2, 42 }
 int a = 5;
 (void)VectorPush( vec, &a );
+// vec: { 0, 1, 2, 42, 5 }
 // TODO
 ```

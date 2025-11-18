@@ -19,6 +19,7 @@
 #define MAX_VEC_LEN 1000
 #endif // MAX_VEC_LEN
 
-//! Specify the size of the `struct Vector` pool which is internally used to deploy vector objects
-#define VEC_STRUCT_POOL_SIZE  25
+//! Specify the sizes of the fixed-size vector object pools, which is internally used to deploy vector/vector iterator objects
+#define VEC_STRUCT_POOL_SIZE       (25)
+#define VITERATOR_STRUCT_POOL_SIZE (VEC_STRUCT_POOL_SIZE * 2)
 

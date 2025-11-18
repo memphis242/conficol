@@ -1,0 +1,3 @@
+[submodule "submodules/biski64"]
+	path = submodules/biski64
+	url = git@github.com:memphis242/biski64.git
